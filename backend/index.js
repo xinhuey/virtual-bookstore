@@ -57,6 +57,66 @@ app.get('/books', async(request, response) =>{
     }
 })
 
+//Route for get one book from database
+app.get('/books/:id', async(request, response) =>{
+    try{
+        const {id} = request.params;
+        const book = await Book.findById(id);
+        return response.status(200).json(book);
+    }
+    catch(error){
+        console.log(error.message);
+        response.status(500).send({message: 'Error in Fetching Book'});
+    }
+})
+
+//Route to update the book 
+app.put('/books/:id', async(request, response) =>{
+    try{
+        if(
+            !request.body.title ||
+            !request.body.author ||
+            !request.body.publishYear
+        ){
+            return response.status(400).send({
+                message: 'Send all required fields: title, author, publishYear',
+            });
+        }
+        const {id}= request.params;
+
+        const result = await Book.findByIdAndUpdate(id, request.body);
+
+        if(!result){
+            return response(404).json({message:'Book not found'});
+        }
+
+        return response.status(200).send({message:'Book Updated Successfully'});
+
+    }
+    catch(error){
+        console.log(error.message);
+        response.status(500).send({message: 'Error in Updating Book'});
+    }
+})
+
+//Route to delete the book 
+app.delete('/books/:id', async(request, response) => {
+    try{
+        const{id} = request.params;
+        const result = await Book.findByIdAndDelete(id);
+
+        if(!result){
+            return response.status(404).json({message: 'Book not found'});
+        }
+
+        return response.status(200).send({message:'Book deleted successfully'});
+    }
+    catch(error){
+        console.log(error.message);
+        response.status(500).send({message: error.message});
+    }
+})
+
 mongoose
     .connect(mongoDBURL)
     .then(()=>{
